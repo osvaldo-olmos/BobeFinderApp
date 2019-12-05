@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         val publishText = findViewById<EditText>(R.id.editTextPublish)
         val subscribeText = findViewById<TextView>(R.id.textViewSubscribe)
 
+        //onCreate
         var subscribeCallback: SubscribeCallback = object : SubscribeCallback()  {
             override fun status(pubnub: PubNub, status: PNStatus) {
 
