@@ -2,8 +2,7 @@ package com.ort.mapapubnub
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.MotionEvent
-import android.widget.EditText
+import android.util.Log
 import android.widget.TextView
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -27,7 +26,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_activity)
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        // obtener el SupportMapFragment y que avise cuando esta listo para usarse
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -40,15 +40,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val pubNub = PubNub(pnConfiguration)
 
 
-        val subscribeText = findViewById<TextView>(R.id.coordenadas)
-        //onCreate
+        val subscribeText = findViewById<TextView>(R.id.coordenadas) //textview que muestra coordenadas
+
         var subscribeCallback: SubscribeCallback = object : SubscribeCallback()  {
             override fun status(pubnub: PubNub, status: PNStatus) {
 
             }
             override fun message(pubnub: PubNub, message: PNMessageResult) {
                 runOnUiThread {
+                    //recibe mensaje del canal
                     subscribeText.text = message.message.toString()
+                    //dibuja las coordenadas que acaba de recibir
+                    dibujarPunto(message.message.toString())
                 }
             }
             override fun presence(pubnub: PubNub, presence: PNPresenceEventResult) {
@@ -73,15 +76,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.610118, -58.385400)
-        mMap.addMarker(MarkerOptions().position(sydney).title("triple o"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        // Add a marker in triple o and move the camera
+        val tripleO = LatLng(-34.610118, -58.385400)
+        mMap.addMarker(MarkerOptions().position(tripleO).title("triple o"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(tripleO))
     }
 
     fun dibujarPunto(coordenadas: String){
         val coords = coordenadas.split(",")
-        
-
+        Log.d("dibujarPunto", "latitud: " + coords[0] + " - longitud: " + coords[1])
+        val nuevoPunto = LatLng(coords[0].toDouble(), coords[1].toDouble())
+        mMap.addMarker(MarkerOptions().position(nuevoPunto).title("se movio la bobe"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(nuevoPunto))
     }
 }
