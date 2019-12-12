@@ -83,7 +83,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun dibujarPunto(coordenadas: String){
-        val coords = coordenadas.split(",")
+        val coordssinsplit = coordenadas.replace('"',' ')
+        val coords = coordssinsplit.split(",")
         Log.d("dibujarPunto", "latitud: " + coords[0] + " - longitud: " + coords[1])
         val nuevoPunto = LatLng(coords[0].toDouble(), coords[1].toDouble())
         mMap.addMarker(MarkerOptions().position(nuevoPunto).title("se movio la bobe"))
