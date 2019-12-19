@@ -1,16 +1,17 @@
 package com.ort.mapapubnub
 
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.pubnub.api.PNConfiguration
 import com.pubnub.api.PubNub
 import com.pubnub.api.callbacks.SubscribeCallback
@@ -18,10 +19,28 @@ import com.pubnub.api.models.consumer.PNStatus
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult
 import java.util.*
+import android.graphics.Color
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PolylineOptions
+
+
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+
+
+    val tripleOHouse = LatLng(-34.610118, -58.385400)
+    val TripleO = MarkerOptions().position(tripleOHouse).title("TripleOPlace")
+    val BobePlace = LatLng(-34.6625764,-58.3761079)
+    val Bobe = MarkerOptions().position(BobePlace).title("La Bobe debería esta aquí")
+    val circleOptions = CircleOptions().center(BobePlace).radius(20.0).fillColor(0x30ff0000).strokeWidth(2f)
+    lateinit var MarcadorBobe : Marker
+
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +57,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         pnConfiguration.publishKey = "pub-c-f623deb2-63eb-4608-acf4-af48ed3e31cc"
         pnConfiguration.secretKey = "true"
         val pubNub = PubNub(pnConfiguration)
+
 
 
         val subscribeText = findViewById<TextView>(R.id.coordenadas) //textview que muestra coordenadas
@@ -77,17 +97,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         // Add a marker in triple o and move the camera
-        val tripleO = LatLng(-34.610118, -58.385400)
-        mMap.addMarker(MarkerOptions().position(tripleO).title("triple o"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(tripleO))
+        MarcadorBobe = mMap.addMarker(Bobe)//Añade
+        mMap.addMarker(TripleO)
+        mMap.addCircle(circleOptions)//Rango donde deberia estar la bobe, solamente visual
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(BobePlace,20f))
+
     }
 
     fun dibujarPunto(coordenadas: String){
+
+
+
         val coordssinsplit = coordenadas.replace('"',' ')
         val coords = coordssinsplit.split(",")
+
         Log.d("dibujarPunto", "latitud: " + coords[0] + " - longitud: " + coords[1])
-        val nuevoPunto = LatLng(coords[0].toDouble(), coords[1].toDouble())
-        mMap.addMarker(MarkerOptions().position(nuevoPunto).title("se movio la bobe"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(nuevoPunto))
+        val LaBobeActual = LatLng(coords[0].toDouble(), coords[1].toDouble())
+
+        val BobeAct = MarkerOptions().position(LaBobeActual).title("La Bobe Esta Aquí").icon(BitmapDescriptorFactory.fromResource(R.drawable.abuela))
+        MarcadorBobe.remove()
+        MarcadorBobe = mMap.addMarker(BobeAct)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LaBobeActual,20f))
+
+        val location = Location("localizacion 1")
+        location.setLatitude(BobePlace.latitude)  //latitud
+        location.setLongitude(BobePlace.longitude) //longitud
+        val location2 = Location("localizacion 2")
+        location2.setLatitude(LaBobeActual.latitude)  //latitud
+        location2.setLongitude(LaBobeActual.longitude) //longitud
+        val distance = location.distanceTo(location2)
+
+        val polylineOptions  = PolylineOptions()
+            .add(BobePlace).add(LaBobeActual).color(Color.parseColor("#f44336"))
+
+        mMap.addPolyline(polylineOptions)
+        Toast.makeText(this, "La bobe esta a "+distance+" metros de su kasa", Toast.LENGTH_LONG).show()
+
     }
 }
